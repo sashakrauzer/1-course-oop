@@ -46,6 +46,27 @@ function App() {
     }
   }, [todayReceipts]);
 
+  const scan = (selectedMyProduct: (typeof products)[number]) => {
+    setSelectedMyProduct(null);
+    setCountProduct(1);
+    setSelectState(0);
+
+    const newObj: SelectedProduct = {
+      selectedProduct: selectedMyProduct,
+      totalPrice: selectedMyProduct.price * countProduct,
+      totalWeight: selectedMyProduct.weight * countProduct,
+    };
+
+    setSelectedProduct((prevState) => {
+      if (prevState && prevState.length > 0) {
+        const newResult = prevState.slice();
+        newResult.push(newObj);
+        return newResult;
+      }
+      return [newObj];
+    });
+  };
+
   const printReceipt = (selectedProduct: SelectedProduct[]) => {
     setSelectedProduct(null);
     setCountProduct(1);
@@ -94,9 +115,15 @@ function App() {
   };
 
   const removedFromReceipts = (index: number) => {
-    const newSelected = selectedProduct?.filter((el, i) => i !== index);
+    const result = window.confirm(
+      "Вы уверены что хотите убрать отсканированный товар?"
+    );
 
-    setSelectedProduct(newSelected || null);
+    if (result) {
+      const newSelected = selectedProduct?.filter((el, i) => i !== index);
+
+      setSelectedProduct(newSelected || null);
+    }
   };
 
   return (
@@ -113,19 +140,21 @@ function App() {
           </div>
           <div>
             Наличных в кассе:{" "}
-            {todayReceipts?.reduce((prev, cur, i) => prev + cur.totalPrice, 0) +
-              " руб"}
+            {todayReceipts
+              ? todayReceipts?.reduce(
+                  (prev, cur, i) => prev + cur.totalPrice,
+                  0
+                ) + " руб"
+              : 0}
           </div>
-          {/* <button>Снять кассу</button> */}
         </header>
         <div className={style.wrapper}>
-          <div>
+          {/* <div>
             <h2>Отсканированный товар</h2>
             {selectedMyProduct && (
               <>
                 {" "}
                 <h3>
-                  {/* Выбранный продукт:{" "} */}
                   {selectedMyProduct.name}
                 </h3>
                 <p>
@@ -136,7 +165,7 @@ function App() {
                 </p>
               </>
             )}
-          </div>
+          </div> */}
           <div className={style.receipt}>
             <h2>Чек</h2>
             {selectedProduct && selectedProduct.length && (
@@ -207,6 +236,7 @@ function App() {
                             day: "numeric",
                             hour: "2-digit",
                             minute: "2-digit",
+                            second: "2-digit",
                           })}
                         </i>
                       </strong>
@@ -323,39 +353,13 @@ function App() {
         )}
 
         {selectedMyProduct && (
-          <>
-            <button
-              onClick={() => {
-                const newObj: SelectedProduct = {
-                  selectedProduct: selectedMyProduct,
-                  totalPrice: selectedMyProduct.price * countProduct,
-                  totalWeight: selectedMyProduct.weight * countProduct,
-                };
-                setSelectedProduct((prevState) => {
-                  if (prevState && prevState.length > 0) {
-                    const newResult = prevState.slice();
-                    newResult.push(newObj);
-                    return newResult;
-                  }
-                  return [newObj];
-                });
-              }}
-            >
-              Отсканировать
-            </button>
-            {/* <button
-              onClick={() => {
-                setSelectedMyProduct(null);
-              }}
-            >
-              Убрать
-            </button> */}
-            {selectedProduct && (
-              <button onClick={() => printReceipt(selectedProduct)}>
-                Печать чека
-              </button>
-            )}
-          </>
+          <button onClick={() => scan(selectedMyProduct)}>Отсканировать</button>
+        )}
+
+        {selectedProduct && (
+          <button onClick={() => printReceipt(selectedProduct)}>
+            Печать чека
+          </button>
         )}
       </div>
     </div>

@@ -15,10 +15,6 @@
   width: 80vw;
   height: 60vh;
   margin-top: 20px;
-  background-color: bisque;
-
-  border-radius: 18px;
-  // overflow: hidden;
 
   .header {
     height: 50px;
@@ -28,10 +24,16 @@
     display: flex;
     align-items: center;
     justify-content: space-around;
+
+    border-radius: 18px 18px 0 0;
   }
 
   .wrapper {
+    background-color: bisque;
     display: flex;
+    height: calc(100% - 50px);
+    border-radius: 0 0 18px 18px;
+
     > div {
       flex-basis: 50%;
       border-right: 1px solid #282c34;
@@ -41,7 +43,6 @@
       }
 
       h2 {
-        // border-bottom: 1px solid #282c34;
         text-decoration: underline;
       }
       h3 {
@@ -51,16 +52,19 @@
   }
 
   .receipt {
+    overflow-y: auto;
     .product {
       border: 1px solid #282c34;
       margin: 0 20px 10px;
       border-radius: 18px;
+      padding-bottom: 8px;
     }
     .resultReceipt {
       border-top: 1px solid #282c34;
       display: flex;
       margin-top: 20px;
       padding-top: 20px;
+      padding-bottom: 20px;
       > div {
         flex-basis: 50%;
       }
@@ -69,13 +73,14 @@
 
   .todayReceipts {
     padding: 0 10px;
-    // border: 1px solid #282c34;
+    overflow-y: auto;
+    padding-bottom: 20px;
     .todayReceipt {
       border: 1px solid #282c34;
       border-radius: 18px;
-      // display: flex;
       margin-top: 20px;
       padding-top: 8px;
+      padding-bottom: 8px;
       font-size: 13px;
 
       header {
@@ -109,7 +114,6 @@
 
   .weight {
     display: flex;
-    // flex-direction: ;
     justify-content: center;
     align-items: center;
     margin-top: 8px;
@@ -118,9 +122,6 @@
       margin-top: 0;
       margin-left: 8px;
     }
-    // div {
-    //   // margin-right: 8px;
-    // }
   }
   .selectedProduct {
     margin-top: 8px;
