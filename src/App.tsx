@@ -27,6 +27,8 @@ function App() {
   >(null);
   const [todayReceipts, setTodayReceipts] = useState<Receipt[] | null>(null);
 
+  const [selectState, setSelectState] = useState(0);
+
   const ref = useRef(true);
   // Заполняем чеками из хранилища
   useEffect(() => {
@@ -46,6 +48,8 @@ function App() {
 
   const printReceipt = (selectedProduct: SelectedProduct[]) => {
     setSelectedProduct(null);
+    setCountProduct(1);
+    setSelectState(0);
 
     const totalPrice = selectedProduct.reduce(
       (prev, curr) => prev + curr.totalPrice,
@@ -87,6 +91,12 @@ function App() {
         setTodayReceipts(removedReceipts);
       }
     }
+  };
+
+  const removedFromReceipts = (index: number) => {
+    const newSelected = selectedProduct?.filter((el, i) => i !== index);
+
+    setSelectedProduct(newSelected || null);
   };
 
   return (
@@ -147,6 +157,9 @@ function App() {
                           <i>{product.totalPrice}</i>
                         </strong>
                       </p>
+                      <button onClick={() => removedFromReceipts(i)}>
+                        Убрать
+                      </button>
                     </div>
                   );
                 })}
@@ -236,6 +249,7 @@ function App() {
         <select
           onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
             const id = +event.target.value;
+            setSelectState(id);
             // console.log("con", id, products[id]);
             const foundProduct = products.find((product) => product.id === id);
             if (foundProduct) {
@@ -245,6 +259,7 @@ function App() {
 
             // setSelectedProduct(+event.target.value);
           }}
+          value={selectState}
         >
           <option value={0} defaultChecked>
             Выберите продукт
@@ -326,15 +341,15 @@ function App() {
                 });
               }}
             >
-              Добавить в чек
+              Отсканировать
             </button>
-            <button
+            {/* <button
               onClick={() => {
                 setSelectedMyProduct(null);
               }}
             >
               Убрать
-            </button>
+            </button> */}
             {selectedProduct && (
               <button onClick={() => printReceipt(selectedProduct)}>
                 Печать чека
