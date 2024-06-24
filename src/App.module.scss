@@ -1,0 +1,163 @@
+.cashMachine {
+  text-align: center;
+  background-color: #282c34;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  p {
+    margin: 8px 0;
+  }
+}
+
+.display {
+  width: 80vw;
+  height: 60vh;
+  margin-top: 20px;
+  background-color: bisque;
+
+  border-radius: 18px;
+  overflow: hidden;
+
+  .header {
+    height: 50px;
+    width: 100%;
+    background-color: cadetblue;
+    border-bottom: 1px solid #282c34;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+  }
+
+  .wrapper {
+    display: flex;
+    > div {
+      flex-basis: 50%;
+      border-right: 1px solid #282c34;
+
+      &:last-child {
+        border-right: 0;
+      }
+
+      h2 {
+        // border-bottom: 1px solid #282c34;
+        text-decoration: underline;
+      }
+      h3 {
+        margin: 8px 0;
+      }
+    }
+  }
+
+  .receipt {
+    .product {
+      border: 1px solid #282c34;
+      margin: 0 20px 10px;
+      border-radius: 18px;
+    }
+    .resultReceipt {
+      border-top: 1px solid #282c34;
+      display: flex;
+      margin-top: 20px;
+      padding-top: 20px;
+      > div {
+        flex-basis: 50%;
+      }
+    }
+  }
+
+  .todayReceipts {
+    padding: 0 10px;
+    // border: 1px solid #282c34;
+    .todayReceipt {
+      border: 1px solid #282c34;
+      border-radius: 18px;
+      // display: flex;
+      margin-top: 20px;
+      padding-top: 8px;
+      font-size: 13px;
+
+      header {
+        margin-bottom: 8px;
+      }
+
+      footer {
+        display: flex;
+        font-size: 11px;
+        justify-content: space-around;
+      }
+    }
+  }
+}
+
+.form {
+  margin-top: 20px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+
+  select {
+    margin-top: 8px;
+    height: 30px;
+  }
+
+  button {
+    margin-top: 8px;
+    height: 30px;
+  }
+
+  .weight {
+    display: flex;
+    // flex-direction: ;
+    justify-content: center;
+    align-items: center;
+    margin-top: 8px;
+
+    button {
+      margin-top: 0;
+      margin-left: 8px;
+    }
+    // div {
+    //   // margin-right: 8px;
+    // }
+  }
+  .selectedProduct {
+    margin-top: 8px;
+  }
+}
+
+// .App-logo {
+//   height: 40vmin;
+//   pointer-events: none;
+// }
+
+// @media (prefers-reduced-motion: no-preference) {
+//   .App-logo {
+//     animation: App-logo-spin infinite 20s linear;
+//   }
+// }
+
+// .App-header {
+//   background-color: #282c34;
+//   min-height: 100vh;
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   justify-content: center;
+//   font-size: calc(10px + 2vmin);
+//   color: white;
+// }
+
+// .App-link {
+//   color: #61dafb;
+// }
+
+// @keyframes App-logo-spin {
+//   from {
+//     transform: rotate(0deg);
+//   }
+//   to {
+//     transform: rotate(360deg);
+//   }
+// }
