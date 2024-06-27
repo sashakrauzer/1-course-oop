@@ -1,37 +1,38 @@
 import React, { useEffect, useRef, useState } from "react";
-// import logo from "./logo.svg";
 import style from "./App.module.scss";
 
 import products from "./products.json";
 
-interface SelectedProduct {
-  selectedProduct: (typeof products)[number];
+interface ScannedProduct {
+  scannedProduct: (typeof products)[number];
   totalPrice: number;
   totalWeight: number;
 }
 
 interface Receipt {
-  selectedProducts: SelectedProduct[];
+  scannedProducts: ScannedProduct[];
   totalPrice: number;
   totalWeight: number;
   date: string;
 }
 
 function App() {
-  const [selectedProduct, setSelectedProduct] = useState<
-    SelectedProduct[] | null
+  const [scannedProducts, setScannedProducts] = useState<
+    ScannedProduct[] | null
   >(null);
   const [countProduct, setCountProduct] = useState<number>(1);
-  const [selectedMyProduct, setSelectedMyProduct] = useState<
+  const [selectedProduct, setSelectedProduct] = useState<
     (typeof products)[number] | null
   >(null);
-  const [todayReceipts, setTodayReceipts] = useState<Receipt[] | null>(null);
-
+  const [allReceipts, setAllReceipts] = useState<Receipt[] | null>(null);
   const [selectState, setSelectState] = useState(0);
 
   const ref = useRef(true);
-  // Заполняем чеками из хранилища
+  // Восстававливаем чеки из хранилища или сохраняем изменения
+  // (Этот эффект срабатывает при изменении переменной allReceipts)
   useEffect(() => {
+    // Это условие отрабатывает только при запуске программы
+    // и восстанавливает чеки в случаи их наличия в локальном хранилище
     if (ref.current) {
       ref.current = false;
 
@@ -39,25 +40,26 @@ function App() {
       let prevReceipts = null;
       if (prevReceiptsAsString) {
         prevReceipts = JSON.parse(prevReceiptsAsString) as Receipt[];
-        setTodayReceipts(prevReceipts);
+        setAllReceipts(prevReceipts);
       }
     } else {
-      localStorage.setItem("allReceipts", JSON.stringify(todayReceipts));
+      localStorage.setItem("allReceipts", JSON.stringify(allReceipts));
     }
-  }, [todayReceipts]);
+  }, [allReceipts]);
 
-  const scan = (selectedMyProduct: (typeof products)[number]) => {
-    setSelectedMyProduct(null);
+  // Функция для сканирования товара
+  const scan = (selectedProduct: (typeof products)[number]) => {
+    setSelectedProduct(null);
     setCountProduct(1);
     setSelectState(0);
 
-    const newObj: SelectedProduct = {
-      selectedProduct: selectedMyProduct,
-      totalPrice: selectedMyProduct.price * countProduct,
-      totalWeight: selectedMyProduct.weight * countProduct,
+    const newObj: ScannedProduct = {
+      scannedProduct: selectedProduct,
+      totalPrice: selectedProduct.price * countProduct,
+      totalWeight: selectedProduct.weight * countProduct,
     };
 
-    setSelectedProduct((prevState) => {
+    setScannedProducts((prevState) => {
       if (prevState && prevState.length > 0) {
         const newResult = prevState.slice();
         newResult.push(newObj);
@@ -67,62 +69,60 @@ function App() {
     });
   };
 
-  const printReceipt = (selectedProduct: SelectedProduct[]) => {
-    setSelectedProduct(null);
+  // Печать чека
+  const printReceipt = (scannedProducts: ScannedProduct[]) => {
+    setScannedProducts(null);
     setCountProduct(1);
     setSelectState(0);
 
-    const totalPrice = selectedProduct.reduce(
+    const totalPrice = scannedProducts.reduce(
       (prev, curr) => prev + curr.totalPrice,
       0
     );
 
-    const totalWeight = selectedProduct.reduce(
+    const totalWeight = scannedProducts.reduce(
       (prev, curr) => prev + curr.totalWeight,
       0
     );
 
     const newReceipt: Receipt = {
-      selectedProducts: selectedProduct,
+      scannedProducts: scannedProducts,
       totalPrice,
       totalWeight,
       date: new Date().toString(),
     };
-    // setTodayReceipts
-    // const prevReceipts = localStorage.getItem("allReceipts");
-    if (todayReceipts) {
-      // const newReceipts = JSON.parse(prevReceipts) as Receipt[];
-      // newReceipts.push(newReceipt);
-      // localStorage.setItem("allReceipts", JSON.stringify(newReceipts));
 
-      setTodayReceipts([...todayReceipts, newReceipt]);
+    if (allReceipts) {
+      setAllReceipts([...allReceipts, newReceipt]);
     } else {
-      setTodayReceipts([newReceipt]);
+      setAllReceipts([newReceipt]);
     }
   };
 
+  // Возврат чека
   const returnReceipt = (date: string) => {
-    if (todayReceipts) {
+    if (allReceipts) {
       const result = window.confirm("Вы уверены что хотите сделать возврат?");
 
       if (result) {
-        const removedReceipts = todayReceipts.filter(
+        const removedReceipts = allReceipts.filter(
           (receipt) => receipt.date !== date
         );
-        setTodayReceipts(removedReceipts);
+        setAllReceipts(removedReceipts);
       }
     }
   };
 
-  const removedFromReceipts = (index: number) => {
+  // Убрать отсканированный товар
+  const removeFromReceipt = (index: number) => {
     const result = window.confirm(
       "Вы уверены что хотите убрать отсканированный товар?"
     );
 
     if (result) {
-      const newSelected = selectedProduct?.filter((el, i) => i !== index);
+      const newSelected = scannedProducts?.filter((el, i) => i !== index);
 
-      setSelectedProduct(newSelected || null);
+      setScannedProducts(newSelected || null);
     }
   };
 
@@ -140,8 +140,8 @@ function App() {
           </div>
           <div>
             Наличных в кассе:{" "}
-            {todayReceipts
-              ? todayReceipts?.reduce(
+            {allReceipts
+              ? allReceipts?.reduce(
                   (prev, cur, i) => prev + cur.totalPrice,
                   0
                 ) + " руб"
@@ -149,31 +149,14 @@ function App() {
           </div>
         </header>
         <div className={style.wrapper}>
-          {/* <div>
-            <h2>Отсканированный товар</h2>
-            {selectedMyProduct && (
-              <>
-                {" "}
-                <h3>
-                  {selectedMyProduct.name}
-                </h3>
-                <p>
-                  Количество/вес:{" "}
-                  <strong>
-                    <i>{selectedMyProduct.weight * countProduct}</i>
-                  </strong>
-                </p>
-              </>
-            )}
-          </div> */}
           <div className={style.receipt}>
             <h2>Чек</h2>
-            {selectedProduct && selectedProduct.length && (
+            {scannedProducts && scannedProducts.length && (
               <>
-                {selectedProduct.map((product, i) => {
+                {scannedProducts.map((product, i) => {
                   return (
                     <div key={i} className={style.product}>
-                      <h3>{product.selectedProduct.name}</h3>
+                      <h3>{product.scannedProduct.name}</h3>
                       <p>
                         Количество/вес:{" "}
                         <strong>
@@ -186,7 +169,7 @@ function App() {
                           <i>{product.totalPrice}</i>
                         </strong>
                       </p>
-                      <button onClick={() => removedFromReceipts(i)}>
+                      <button onClick={() => removeFromReceipt(i)}>
                         Убрать
                       </button>
                     </div>
@@ -197,7 +180,7 @@ function App() {
                     Общий вес:{" "}
                     <strong>
                       <i>
-                        {selectedProduct.reduce(
+                        {scannedProducts.reduce(
                           (prev, curr, i) => prev + curr.totalWeight,
                           0
                         ) / 1000}{" "}
@@ -209,7 +192,7 @@ function App() {
                     Сумма:{" "}
                     <strong>
                       <i>
-                        {selectedProduct.reduce(
+                        {scannedProducts.reduce(
                           (prev, curr, i) => prev + curr.totalPrice,
                           0
                         )}
@@ -219,12 +202,11 @@ function App() {
                 </div>
               </>
             )}
-            {/* {selectedProduct && } */}
           </div>
-          <div className={style.todayReceipts}>
+          <div className={style.allReceipts}>
             <h2>История</h2>
-            {todayReceipts &&
-              todayReceipts.map((receipt, i) => {
+            {allReceipts &&
+              allReceipts.map((receipt, i) => {
                 return (
                   <div key={i} className={style.todayReceipt}>
                     <header>
@@ -241,11 +223,11 @@ function App() {
                         </i>
                       </strong>
                     </header>
-                    {receipt.selectedProducts.map((product, i, arr) => {
+                    {receipt.scannedProducts.map((product, i, arr) => {
                       const isLast = arr.length - 1 === i;
                       return (
                         <span className={style.product} key={i}>
-                          {product.selectedProduct.name + (isLast ? "" : ", ")}
+                          {product.scannedProduct.name + (isLast ? "" : ", ")}
                         </span>
                       );
                     })}
@@ -280,14 +262,12 @@ function App() {
           onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
             const id = +event.target.value;
             setSelectState(id);
-            // console.log("con", id, products[id]);
+
             const foundProduct = products.find((product) => product.id === id);
             if (foundProduct) {
-              setSelectedMyProduct(foundProduct);
+              setSelectedProduct(foundProduct);
               setCountProduct(1);
             }
-
-            // setSelectedProduct(+event.target.value);
           }}
           value={selectState}
         >
@@ -304,20 +284,19 @@ function App() {
           })}
         </select>
 
-        {selectedMyProduct && (
-          <div className={style.selectedProduct}>
+        {selectedProduct && (
+          <div className={style.scannedProducts}>
             <div>
-              {selectedMyProduct.type === "Весовой" ? "Вес" : "Кол-во"}:{" "}
+              {selectedProduct.type === "Весовой" ? "Вес" : "Кол-во"}:{" "}
               <strong>
                 <i>
-                  {selectedMyProduct.type === "Весовой"
-                    ? (selectedMyProduct.weight / 1000) * countProduct + " кг"
+                  {selectedProduct.type === "Весовой"
+                    ? (selectedProduct.weight / 1000) * countProduct + " кг"
                     : countProduct +
                       " шт (" +
-                      (
-                        (selectedMyProduct.weight / 1000) *
-                        countProduct
-                      ).toFixed(1) +
+                      ((selectedProduct.weight / 1000) * countProduct).toFixed(
+                        1
+                      ) +
                       " кг)"}
                 </i>
               </strong>
@@ -325,18 +304,15 @@ function App() {
             <div>
               Цена:{" "}
               <strong>
-                <i>{selectedMyProduct.price * countProduct} руб</i>
+                <i>{selectedProduct.price * countProduct} руб</i>
               </strong>
             </div>
           </div>
         )}
 
-        {selectedMyProduct && (
+        {selectedProduct && (
           <div className={style.weight}>
-            {selectedMyProduct.type === "Весовой" ? "Вес" : "Количество"}:{" "}
-            {/* {selectedMyProduct.type === "Весовой"
-              ? selectedMyProduct.weight * countProduct
-              : countProduct + " шт."} */}
+            {selectedProduct.type === "Весовой" ? "Вес" : "Количество"}:{" "}
             <button onClick={() => setCountProduct((prevValue) => ++prevValue)}>
               +
             </button>
@@ -352,12 +328,12 @@ function App() {
           </div>
         )}
 
-        {selectedMyProduct && (
-          <button onClick={() => scan(selectedMyProduct)}>Отсканировать</button>
+        {selectedProduct && (
+          <button onClick={() => scan(selectedProduct)}>Отсканировать</button>
         )}
 
-        {selectedProduct && (
-          <button onClick={() => printReceipt(selectedProduct)}>
+        {scannedProducts && (
+          <button onClick={() => printReceipt(scannedProducts)}>
             Печать чека
           </button>
         )}
